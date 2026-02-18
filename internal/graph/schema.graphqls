@@ -1,0 +1,275 @@
+scalar Decimal
+scalar Date
+scalar DateTime
+
+# ─── Core Types ────────────────────────────────────────────────────────────────
+
+type Company {
+  id: ID!
+  name: String!
+  stakeholders: [Stakeholder!]!
+  shareClasses: [ShareClass!]!
+  grants: [Grant!]!
+  fundingRounds: [FundingRound!]!
+  safeNotes: [SAFENote!]!
+  createdAt: DateTime!
+}
+
+type Stakeholder {
+  id: ID!
+  companyID: ID!
+  name: String!
+  email: String!
+  role: StakeholderRole!
+  grants: [Grant!]!
+  createdAt: DateTime!
+}
+
+enum StakeholderRole {
+  FOUNDER
+  EMPLOYEE
+  INVESTOR
+  ADVISOR
+  CONSULTANT
+}
+
+type ShareClass {
+  id: ID!
+  companyID: ID!
+  name: String!
+  isPreferred: Boolean!
+  liquidationMultiple: Decimal!
+  isParticipating: Boolean!
+  participationCap: Decimal
+  pricePerShare: Decimal
+  seniority: Int!
+  authorizedShares: Decimal!
+  createdAt: DateTime!
+}
+
+type Grant {
+  id: ID!
+  companyID: ID!
+  stakeholderID: ID!
+  shareClassID: ID!
+  vestingScheduleID: ID
+  quantity: Decimal!
+  grantDate: Date!
+  exercisePrice: Decimal!
+  isExercised: Boolean!
+  notes: String
+  vestingSchedule: VestingSchedule
+  createdAt: DateTime!
+}
+
+type VestingSchedule {
+  id: ID!
+  cliffMonths: Int!
+  totalMonths: Int!
+  frequency: VestingFrequency!
+  accelerationTrigger: AccelerationTrigger!
+}
+
+enum VestingFrequency {
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+}
+
+enum AccelerationTrigger {
+  NONE
+  SINGLE_TRIGGER
+  DOUBLE_TRIGGER
+}
+
+type FundingRound {
+  id: ID!
+  companyID: ID!
+  name: String!
+  preMoneyValuation: Decimal!
+  amountRaised: Decimal!
+  pricePerShare: Decimal!
+  shareClassID: ID!
+  roundDate: Date!
+  createdAt: DateTime!
+}
+
+type SAFENote {
+  id: ID!
+  companyID: ID!
+  stakeholderID: ID!
+  investmentAmount: Decimal!
+  valuationCap: Decimal
+  discountRate: Decimal
+  safeType: SAFEType!
+  isConverted: Boolean!
+  convertedInRound: ID
+  issueDate: Date!
+  createdAt: DateTime!
+}
+
+enum SAFEType {
+  PRE_MONEY
+  POST_MONEY
+}
+
+# ─── Computed Types ────────────────────────────────────────────────────────────
+
+type VestingStatus {
+  grantID: ID!
+  asOfDate: Date!
+  totalShares: Decimal!
+  vestedShares: Decimal!
+  unvestedShares: Decimal!
+  percentVested: Decimal!
+  cliffDate: Date!
+  fullyVestedAt: Date!
+  isFullyVested: Boolean!
+}
+
+type SAFEConversionResult {
+  safeID: ID!
+  sharesIssued: Decimal!
+  effectivePPS: Decimal!
+  conversionMethod: String!
+}
+
+type CapTableEntry {
+  stakeholderID: ID
+  stakeholderName: String!
+  shareClassName: String!
+  shares: Decimal!
+  ownershipPct: Decimal!
+}
+
+type CapTableSnapshot {
+  companyID: ID
+  totalShares: Decimal!
+  entries: [CapTableEntry!]!
+}
+
+type DilutionResult {
+  preRound: CapTableSnapshot!
+  postRound: CapTableSnapshot!
+  newInvestor: CapTableEntry!
+  roundName: String!
+}
+
+type WaterfallPayout {
+  stakeholderID: ID!
+  stakeholderName: String!
+  shareClassName: String!
+  shares: Decimal!
+  payout: Decimal!
+  payoutPerShare: Decimal!
+}
+
+type WaterfallResult {
+  exitValuation: Decimal!
+  totalPayout: Decimal!
+  payouts: [WaterfallPayout!]!
+}
+
+# ─── Inputs ────────────────────────────────────────────────────────────────────
+
+input CreateCompanyInput {
+  name: String!
+}
+
+input AddStakeholderInput {
+  companyID: ID!
+  name: String!
+  email: String!
+  role: StakeholderRole!
+}
+
+input CreateShareClassInput {
+  companyID: ID!
+  name: String!
+  isPreferred: Boolean!
+  liquidationMultiple: Decimal
+  isParticipating: Boolean
+  participationCap: Decimal
+  pricePerShare: Decimal
+  seniority: Int
+  authorizedShares: Decimal!
+}
+
+input CreateVestingScheduleInput {
+  cliffMonths: Int!
+  totalMonths: Int!
+  frequency: VestingFrequency!
+  accelerationTrigger: AccelerationTrigger
+}
+
+input IssueGrantInput {
+  companyID: ID!
+  stakeholderID: ID!
+  shareClassID: ID!
+  vestingScheduleID: ID
+  quantity: Decimal!
+  grantDate: Date!
+  exercisePrice: Decimal
+  notes: String
+}
+
+input RecordFundingRoundInput {
+  companyID: ID!
+  name: String!
+  preMoneyValuation: Decimal!
+  amountRaised: Decimal!
+  pricePerShare: Decimal!
+  shareClassID: ID!
+  roundDate: Date!
+}
+
+input IssueSAFEInput {
+  companyID: ID!
+  stakeholderID: ID!
+  investmentAmount: Decimal!
+  valuationCap: Decimal
+  discountRate: Decimal
+  safeType: SAFEType!
+  issueDate: Date!
+}
+
+input DilutionModelInput {
+  companyID: ID!
+  roundName: String!
+  preMoneyValuation: Decimal!
+  amountRaised: Decimal!
+  newShareClass: String!
+  investorName: String!
+}
+
+# ─── Queries ───────────────────────────────────────────────────────────────────
+
+type Query {
+  company(id: ID!): Company
+  stakeholder(id: ID!): Stakeholder
+
+  """Compute vesting status for a grant at a specific date."""
+  vestingStatus(grantID: ID!, asOfDate: Date!): VestingStatus!
+
+  """Build the current cap table snapshot for a company."""
+  capTable(companyID: ID!): CapTableSnapshot!
+
+  """Model the dilution impact of a hypothetical funding round."""
+  modelDilution(input: DilutionModelInput!): DilutionResult!
+
+  """Calculate the liquidation waterfall for a given exit valuation."""
+  waterfall(companyID: ID!, exitValuation: Decimal!): WaterfallResult!
+}
+
+# ─── Mutations ─────────────────────────────────────────────────────────────────
+
+type Mutation {
+  createCompany(input: CreateCompanyInput!): Company!
+  addStakeholder(input: AddStakeholderInput!): Stakeholder!
+  createShareClass(input: CreateShareClassInput!): ShareClass!
+  createVestingSchedule(input: CreateVestingScheduleInput!): VestingSchedule!
+  issueGrant(input: IssueGrantInput!): Grant!
+  recordFundingRound(input: RecordFundingRoundInput!): FundingRound!
+  issueSAFE(input: IssueSAFEInput!): SAFENote!
+  convertSAFE(safeID: ID!, roundID: ID!): SAFEConversionResult!
+}
