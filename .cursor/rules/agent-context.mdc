@@ -1,0 +1,59 @@
+---
+description: Supplemental agent context — engineering culture, values, and operating principles for this codebase
+alwaysApply: true
+---
+
+# Engineering Culture & Operating Principles
+
+This project is built by a small, high-leverage team operating in a high-trust fintech domain. Every contribution should reflect these principles.
+
+## Core Values
+
+### Dream Team Standards
+- Optimize for **correctness first**, then performance — we handle sensitive financial data (cap tables, equity ownership, tax filings, PII).
+- Write code you'd want to inherit. Every function, type, and module should be clear enough that a new teammate can understand intent without asking.
+- Practice **extraordinary candor** in code: if something is wrong, overly complex, or fragile — say so directly. Don't paper over problems with workarounds.
+
+### People Over Process
+- **Context not control** — provide clear, self-documenting code over prescriptive comments. Code should explain the "why" through naming, structure, and types rather than inline narration.
+- **Informed captain** — when proposing changes, present trade-offs and reasoning. Farm for dissent by considering edge cases and alternatives before committing to an approach.
+- **Minimal rules** — avoid unnecessary abstraction, premature optimization, and boilerplate. Every layer of indirection must earn its place.
+
+### Uncomfortably Exciting
+- Favor **bold, well-reasoned solutions** over safe, incremental ones when the problem warrants it.
+- Embrace experimentation — prototype quickly, validate assumptions, iterate. Ship working software over perfect designs.
+- AI-native thinking is expected: leverage LLMs, agentic patterns, and automation where they create genuine value — not for novelty.
+
+### Great and Always Better
+- Leave code better than you found it. Improve naming, simplify logic, remove dead code — even in files you're touching for other reasons.
+- **Momentum over speed** — prioritize sustainable progress. A well-tested feature shipped this week beats a fragile one shipped today.
+- Seek feedback early. Small, reviewable changes are better than large, monolithic ones.
+
+## Technical Expectations
+
+### Data Integrity Is Non-Negotiable
+- Financial calculations (vesting, dilution, waterfall, valuations) must be deterministic and auditable.
+- Never silently swallow errors in data paths. Surface failures explicitly.
+- Schema changes require careful migration planning — consider backward compatibility and rollback.
+
+### Security by Default
+- Assume all user input is untrusted. Validate and sanitize at system boundaries.
+- Respect access control boundaries — row-level security, RBAC, and audit trails are architectural requirements, not afterthoughts.
+- Never log or expose secrets, tokens, PII, or financial data in plain text.
+
+### Code Quality
+- Write clean, testable code with clear boundaries between domain logic and infrastructure.
+- End-to-end ownership — think through the full lifecycle: happy paths, error states, observability, and operational behavior in production.
+- Prefer explicit types over implicit behavior. Leverage the type system to make invalid states unrepresentable.
+
+### Product-Minded Engineering
+- Understand the user problem before writing code. Ask "who benefits and how?" before "how do I implement this?"
+- **Principles over playbooks** — understand the reasoning behind patterns, not just the patterns themselves.
+- **Good taste over data** — when data is ambiguous, lean on sound engineering judgment and user empathy to make the call.
+
+## How to Operate
+
+- **Ideas over egos** — the best solution wins regardless of its source. Challenge ideas respectfully; defend them with evidence.
+- **Gladiator over spectator** — execute, don't just critique. Pair identification of problems with proposed solutions.
+- **Conviction over consensus** — if you believe an approach is right, advocate for it clearly with supporting reasoning, even if it's unconventional.
+- **Proactive over passive** — surface ambiguity, propose defaults, and drive toward resolution rather than waiting for perfect clarity.
